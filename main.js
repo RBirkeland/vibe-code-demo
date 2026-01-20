@@ -7,12 +7,21 @@ let nextId = 1;
 // Current filter (Feature 2)
 let currentFilter = 'all';
 
+// Theme state
+let currentTheme = 'light';
+
+// Search state
+let searchQuery = '';
+
 document.addEventListener('DOMContentLoaded', () => {
     init();
     initVibeKanban();
 });
 
 function init() {
+    // Initialize theme
+    initTheme();
+
     // Wire up add button
     const addBtn = document.getElementById('addBtn');
     const todoInput = document.getElementById('todoInput');
@@ -28,12 +37,81 @@ function init() {
         btn.addEventListener('click', () => setFilter(btn.dataset.filter));
     });
 
+    // Wire up search input if it exists
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderTodos();
+        });
+    }
+
     renderTodos();
 }
 
 function initVibeKanban() {
     const companion = new VibeKanbanWebCompanion();
     companion.render(document.body);
+}
+
+// Theme functions
+export function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+}
+
+export function setTheme(theme) {
+    if (!['light', 'dark'].includes(theme)) return;
+    currentTheme = theme;
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+}
+
+export function toggleTheme() {
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    return newTheme;
+}
+
+export function getTheme() {
+    return currentTheme;
+}
+
+// Search functions
+export function setSearchQuery(query) {
+    searchQuery = query.toLowerCase();
+}
+
+export function getSearchQuery() {
+    return searchQuery;
+}
+
+export function filterTodosBySearch(todosToFilter) {
+    if (!searchQuery) return todosToFilter;
+    return todosToFilter.filter(todo =>
+        todo.text.toLowerCase().includes(searchQuery)
+    );
+}
+
+export function sortTodos(todosToSort, sortBy = 'created') {
+    const sorted = [...todosToSort];
+    switch (sortBy) {
+        case 'completed':
+            sorted.sort((a, b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1));
+            break;
+        case 'dueDate':
+            sorted.sort((a, b) => {
+                const dateA = a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31');
+                const dateB = b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31');
+                return dateA - dateB;
+            });
+            break;
+        case 'created':
+        default:
+            // Keep original order (by id)
+            break;
+    }
+    return sorted;
 }
 
 // Feature 1: Add, toggle, delete todos

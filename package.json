@@ -5,13 +5,23 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "vite --open",
+    "dev:watch": "vite --open --watch",
+    "build": "vite build --minify",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview --open",
+    "clean": "rm -rf dist node_modules .vite",
+    "clean:dist": "rm -rf dist",
     "lint": "npm run lint:js && npm run lint:css",
-    "lint:js": "eslint app.js",
+    "lint:js": "eslint main.js",
     "lint:css": "stylelint styles.css",
-    "lint:fix": "eslint app.js --fix && stylelint styles.css --fix"
+    "lint:fix": "eslint main.js --fix && stylelint styles.css --fix",
+    "lint:watch": "npm run lint:fix -- --watch",
+    "type-check": "echo 'Run type checking if using TypeScript'",
+    "test": "echo 'Configure test runner (e.g., vitest, jest)'",
+    "format": "npm run lint:fix",
+    "validate": "npm run lint && npm run type-check && npm run build",
+    "start": "npm run dev"
   },
   "keywords": [
     "todo",

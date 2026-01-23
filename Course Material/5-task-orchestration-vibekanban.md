@@ -1,58 +1,98 @@
 # Module 5: Task Orchestration with VibeKanban
 
 ## What You'll Learn
-- Set up VibeKanban for multi-agent task execution
-- Create tickets from planning sessions
-- Run multiple agents in parallel and handle merge conflicts
+- Understand why task orchestration is needed for complex projects
+- Set up VibeKanban to coordinate multiple agents
+- Run features in parallel and resolve conflicts
 
 ---
 
-## Setting Up VibeKanban
+## The Problem: Complex Projects Need Coordination
 
-VibeKanban is a Kanban board for multi-agent task execution.
+You can use agents to build features individually. But what if you need to build 3 features at the same time?
+
+Without coordination:
+- Agents work on the same files and conflict
+- You manually merge everything
+- One agent's mistake blocks others
+- You have no visibility into progress
+
+With multiple features, multiple agents, and tight timelines, you need a system that:
+1. **Breaks work into discrete tickets** so agents don't step on each other
+2. **Tracks progress** so you know what's done, in progress, and blocked
+3. **Manages dependencies** so blocked tasks wait automatically
+4. **Coordinates merges** so conflicts get resolved systematically
+
+> [!WARNING]
+> Without coordination, parallel agents create chaos: merge conflicts, duplicate work, and invisible blockers. Task orchestration prevents that.
+
+---
+
+## The Solution: VibeKanban
+
+**VibeKanban is a Kanban board that coordinates multiple agents.**
+
+Think of it as a project manager for agents. Each agent picks a ticket, works independently, and reports progress. VibeKanban tracks everything and prevents chaos.
+
+### Setting Up VibeKanban
 
 ```bash
 npx vibe-kanban                                    # Start board
-claude mcp add vibe-kanban -- npx vibe-kanban-mcp  # Add MCP
+claude mcp add vibe_kanban --scope user -- npx -y vibe-kanban@latest --mcp  # Add MCP
 ```
 
 > [!NOTE]
 > Restart Claude Code after adding the MCP to load it properly.
 
-**Learn more:**
+To learn more:
 - [VibeKanban Documentation](https://www.vibekanban.com/docs/agents/claude-code) - Full setup and usage guide
 
 ---
 
-## Creating Tickets from Plans
+## From Plans to Parallel Execution
 
-After creating a plan, ask Claude:
+### Step 1: Create a Plan
+
+```bash
+/plan Implement these 3 features: [your choices]
 ```
-Write detailed tickets for all tasks and add them to VibeKanban
+
+The plan breaks work into logical steps.
+
+### Step 2: Convert Plan to Tickets
+
+```
+Write detailed tickets for all tasks and add them to VibeKanban using the MCP. 
 ```
 
-Claude will break down your plan into discrete, trackable tickets on the Kanban board.
+Consider specifying how you would like the tickets to be structured, such as:
+- Clear and specific (one thing to do)
+- Sized appropriately (agent can complete in one session)
+- Marked with dependencies if they exist
+- Marked with `[P]` if parallelizable
 
----
-
-## Running Multiple Agents in Parallel
-
-Each agent picks up a ticket, creates a feature branch, and opens a PR when done.
+### Step 3: Run Agents in Parallel
 
 ```
 Start working on all parallelizable tasks marked with [P]
 ```
 
+Multiple agents start simultaneously, each working on their own ticket in their own branch.
+
 ### Before Parallel Execution
 
 > [!WARNING]
-> Configure SafetyNet before parallel execution—agents run in YOLO mode.
+> Always configure SafetyNet before parallel execution—agents run in autonomous YOLO mode.
 
-| Consideration | Details |
-|--------------|---------|
-| **Safety** | Configure SafetyNet (agents run autonomously) |
+| Consideration | What to Know |
+|--------------|------|
+| **Safety** | Configure SafetyNet with custom rules (agents execute without confirmation) |
 | **Dependencies** | Serial tasks wait automatically; only parallel tasks run concurrently |
-| **Conflicts** | Be prepared to handle merge conflicts when PRs overlap |
+| **Merge Conflicts** | Expected when agents modify the same files; resolve systematically |
+
+### What to Expect
+
+When agents finish, they open PRs. If they modified different files, merging is automatic. If they modified the same file, you'll have merge conflicts—that's normal and expected. Review the conflicts, pick the correct version, and merge.
 
 ---
 
@@ -60,23 +100,23 @@ Start working on all parallelizable tasks marked with [P]
 
 | Concept | Remember |
 |---------|----------|
-| **VibeKanban** | Kanban board for multi-agent task execution |
-| **Tickets** | Convert plans into trackable, discrete tickets |
-| **Parallel Execution** | Multiple agents work simultaneously on independent tasks |
-| **Safety First** | Always configure SafetyNet before running parallel agents |
+| **The Problem** | Complex projects need coordination; parallel agents without structure = chaos |
+| **The Solution** | VibeKanban breaks work into tickets and tracks progress |
+| **Parallel Execution** | Multiple agents work simultaneously, independently, on separate branches |
+| **Safety + Coordination** | SafetyNet + VibeKanban = safe, coordinated parallel development |
 
 ---
 
-## Exercise: Implement 3 Features in Parallel
+## Exercise: Scale to 3 Features in Parallel
 
 | | |
 |---|---|
-| **Goal** | Run multiple agents in parallel and handle merge conflicts |
-| **Concepts** | Multi-agent coordination, parallel execution, merge conflict resolution |
+| **Goal** | Experience multi-agent coordination with real parallel execution |
+| **Concepts** | Ticket-driven development, parallel agents, merge conflict resolution, dependency tracking |
 
-### Choose 3 Features
+### Choose 3 Features to Implement
 
-Select 3 features to implement:
+Pick any 3 from this list (independent features work best):
 1. Search/Filter by Text
 2. Dark Mode Toggle
 3. Bulk Operations (Select All, Delete Completed, Mark All Complete)
@@ -86,28 +126,63 @@ Select 3 features to implement:
 7. Todo Details/Notes
 8. Undo/Redo
 
+**Tip**: Pick features that modify different parts of the codebase (UI components, storage, etc.) to avoid excessive merge conflicts while still practicing conflict resolution.
+
 ### Steps
 
-1. Create a plan:
+1. **Create a plan** for all 3 features:
    ```bash
    /plan Implement these 3 features: [your choices]
    ```
 
-2. Create VibeKanban tickets from the plan
+   Review the plan. Approve it when it looks good.
 
-3. Start parallel execution
+2. **Convert plan to VibeKanban tickets**:
+   ```
+   Write detailed tickets for all tasks and add them to VibeKanban.
+   Mark parallelizable tasks with [P].
+   ```
 
-4. Handle merge conflicts when PRs overlap
+3. **View the board**:
+   - Open VibeKanban and see your tickets in the "To Do" column
+   - Notice which tasks are marked `[P]` (parallelizable)
+   - Check for dependencies
 
-5. Test features individually, then together
+4. **Start parallel execution**:
+   ```
+   Start working on all parallelizable tasks marked with [P]
+   ```
+
+   **What happens**: Multiple agents spawn simultaneously. Each picks a ticket and starts working on their own branch.
+
+5. **Watch progress**:
+   - Agents update ticket status as they work
+   - Blocked tasks wait automatically
+   - When agents finish, they open PRs
+
+6. **Handle merge conflicts**:
+   - If agents modified the same files, GitHub will mark PRs as "conflicted"
+   - Review the conflicts: which version is correct?
+   - Resolve manually or ask Claude to help merge
+   - This is expected and normal
+
+7. **Test the result**:
+   - All 3 features work individually
+   - All 3 features work together
+   - No console errors
 
 ### Acceptance Criteria
-- [ ] 3 features are selected and planned
-- [ ] VibeKanban tickets created for all tasks
-- [ ] Multiple agents run in parallel successfully
-- [ ] At least 1 merge conflict is identified and resolved
-- [ ] All 3 features work correctly individually
+- [ ] 3 independent features selected and described
+- [ ] VibeKanban tickets created with clear descriptions
+- [ ] Parallelizable tasks marked with `[P]`
+- [ ] Multiple agents run in parallel without manual intervention
+- [ ] At least 1 merge conflict occurs and is resolved
+- [ ] All 3 features function correctly individually
 - [ ] All 3 features work together without conflicts
+- [ ] You understand how VibeKanban prevented chaos
+
+> [!NOTE]
+> **What you just learned**: This is how teams scale agent-driven development. Instead of agents trampling each other, VibeKanban coordinates them into a productive system. That coordination is what makes parallel agent development possible.
 
 ---
 

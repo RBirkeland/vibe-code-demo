@@ -83,41 +83,46 @@ When you use `/plan`, Claude will:
 
 ## Context Window Management
 
-### The Problem
+Model's have a set context window (how many tokens can be stored in memory) when processing your prompts. Anthripic models tend to have 200k tokens context windows and Google's Gemini models offers up to 1M tokens.
 
-Models have lower performance when context becomes "noisy"—too much irrelevant information degrades reasoning.
+### The Problem
+Models performance is heavily influenced by:
+- Is the data correct
+- Is the data complete
+- Noise
+
+When working with LLMs we might be tempted to simply give the model 'all' of our context (code, documentation etc.), assuming more is more. However, this is not true.
+
+Models have lower performance when context becomes "noisy", even though all the data is correct, code and written text contains a lot of fillers that does not give much actual context. For code this can be syntax such as *< xml >* tags and for written text words such as "the".
+
+The largest problem here is giving a large set of files where some content might be relevant but some is not. This fill up the context window with unrelated noise which will confuse the model.
 
 > [!WARNING]
 > For Claude models, performance degrades significantly around **50% of context window (~100k tokens)**—the "dumb zone" where the model struggles.
 
-**Why It Happens:**
-- Too much information increases noise-to-signal ratio
-- Model attention gets diluted across irrelevant context
-- Reasoning becomes less precise
+To learn more about context rot, check out:
+- [Context Rot Research](https://research.trychroma.com/context-rot) - Understanding context degradation in AI systems
 
 ### The Solution
 
-Keep one context window focused on one task:
+1. Keep one context window focused on one task: For each task, give the agent as concise data as possible for the related task. Avoid giving 'all' the context. Once you have completed the task, use `/clear` to clear the content window.
+2. To store *context* across sessions, use markdown files to store guidelines, rules and context. You can read more on how to use `claude.md` files [here](https://www.humanlayer.dev/blog/writing-a-good-claude-md).
+3. If you have a lot of documents/code and you don't know what's relevant or not, use a dedicated agent (sub-agent) to first process and compress large amounts of information before passing to main agent. The sub agent will have it's own seperate context window and can then load a large set of tokens (e.g. 10k of documentation), find the parts relevant to the task, and return a short summary of the data relevant to the task to the main agent (e.g. 1k tokens). The main agent only needs to store 1k instead of 10k tokens.
 
-| Strategy | How to Apply |
-|----------|--------------|
-| **Use `/clear`** | Start fresh when switching tasks to prevent information bleed |
-| **Use sub-agents** | Process and compress large amounts of information before passing to main agent |
-| **Selective context** | Only load files/docs relevant to current task |
-| **Separate concerns** | Documentation research, implementation, and testing in separate contexts |
-
-### Example Workflow
+### Example Sub-Agent Workflow
 
 ```
 Task: Implement date picker with date-fns
 
-❌ Bad:  Load all date-fns docs + entire codebase + tests → implement
-✅ Good: Sub-agent searches date-fns docs → returns key API summary
-         Main agent implements with focused context
+❌ Bad:  Main Agent:
+      1. Load all date-fns docs + entire codebase
+      2. implement
+✅ Good: 
+      1. Spawn new sub-agent with sub task to summarise documentation
+         1.1 Sub Agent loads all date-fns docs + entire codebase
+         1.2 Sub-agent searches date-fns docs → returns key API summary
+      2. Main agent implements with focused context
 ```
-
-**Learn more:**
-- [Context Rot Research](https://research.trychroma.com/context-rot) - Understanding context degradation in AI systems
 
 ---
 
@@ -127,7 +132,7 @@ Task: Implement date picker with date-fns
 |---------|----------|
 | **Agents vs Chat** | Agents take action; chat gives suggestions |
 | **Planning** | 80% planning, 20% executing—fix the plan, not the code |
-| **Context** | One task per context window; use `/clear` between tasks |
+| **Context** | One task per context window; use `/clear` between tasks. Utilise multiple agents to solve tasks that require a lot of input tokens. |
 | **Validation** | Always review agent output before committing |
 
 ---

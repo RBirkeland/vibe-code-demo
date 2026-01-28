@@ -177,3 +177,52 @@ footer {
 .todo-delete:active {
     background-color: #b91c1c;
 }
+
+/* Search section */
+.search-section {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.search-section input {
+    width: 100%;
+    padding: 0.75rem;
+    padding-right: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.search-section input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 1.25rem;
+    display: none;
+    transition: color 0.2s;
+}
+
+.clear-search-btn:hover {
+    color: #6b7280;
+}
+
+.search-section input:not(:placeholder-shown) ~ .clear-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

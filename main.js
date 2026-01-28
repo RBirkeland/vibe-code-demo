@@ -7,6 +7,9 @@ let nextId = 1;
 // Current filter (Feature 2)
 let currentFilter = 'all';
 
+// Search/Filter state
+let currentSearchText = '';
+
 document.addEventListener('DOMContentLoaded', () => {
     init();
     initVibeKanban();
@@ -26,6 +29,26 @@ function init() {
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
         btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+    });
+
+    // Wire up search input with debounce
+    const searchInput = document.getElementById('searchInput');
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentSearchText = e.target.value.toLowerCase();
+            renderTodos();
+        }, 150);
+    });
+
+    // Wire up clear search button
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        currentSearchText = '';
+        renderTodos();
+        searchInput.focus();
     });
 
     renderTodos();
@@ -91,14 +114,23 @@ function renderTodos() {
     });
 }
 
-// Feature 2: Filter todos based on current filter
+// Feature 2: Filter todos based on current filter AND search text
 function getFilteredTodos() {
+    let filtered = todos;
+
+    // Apply status filter
     if (currentFilter === 'active') {
-        return todos.filter(t => !t.completed);
+        filtered = filtered.filter(t => !t.completed);
     } else if (currentFilter === 'completed') {
-        return todos.filter(t => t.completed);
+        filtered = filtered.filter(t => t.completed);
     }
-    return todos; // 'all'
+
+    // Apply search filter (case-insensitive)
+    if (currentSearchText) {
+        filtered = filtered.filter(t => t.text.toLowerCase().includes(currentSearchText));
+    }
+
+    return filtered;
 }
 
 // Feature 2: Set filter and update UI
